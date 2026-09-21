@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1790027913377,
+      "tag": "0000_create_afterlight_memories",
+      "breakpoints": true
+    }
+  ]
+}
