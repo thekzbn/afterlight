@@ -105,8 +105,15 @@ function Index() {
       window.setTimeout(() => setEnteringId(null), 1900);
     } catch { if (paths.length) await supabase.storage.from("memory-images").remove(paths); setError("This memory could not be released. Please try again."); setEnteringId(null); }
   }
-
-  async function openMemory(memory: Memory) { setFocused(memory); if (!memory.image_paths.length) { setPhotoUrls([]); return; } const { data } = await supabase.storage.from("memory-images").createSignedUrls(memory.image_paths, 600); setPhotoUrls((data ?? []).flatMap((item) => item.signedUrl ? [item.signedUrl] : [])); }
+async function openMemory(memory: Memory, hue: string) {
+  setFocused({ memory, hue });
+  if (!memory.image_paths.length) {
+    setPhotoUrls([]);
+    return;
+  }
+  const { data } = await supabase.storage.from("memory-images").createSignedUrls(memory.image_paths, 600);
+  setPhotoUrls((data ?? []).flatMap((item) => (item.signedUrl ? [item.signedUrl] : [])));
+}
   function changeRoom() {
     if (roomTransitioning) return;
     setFocused(null); setRoomTransitioning(true);
@@ -119,7 +126,7 @@ function Index() {
     <LiquidFilter />
     {user && <Button type="button" variant="ghost" size="icon" className={`rewind-button ${mode === "recalled" ? "is-active" : ""}`} onClick={(event) => { event.stopPropagation(); changeRoom(); }} disabled={roomTransitioning} aria-label={mode === "future" ? "Open arrived memories" : "Return to future memories"} title={mode === "future" ? "Recollections" : "Return"}><Rewind strokeWidth={1.35} /></Button>}
     <div className={`room-scene ${roomTransitioning ? "is-transitioning" : ""}`}>
-    <div className="constellation" aria-hidden={!user}>{(mode === "future" ? future : recalled).map((memory, index) => <MemoryOrb key={memory.id} memory={memory} index={index} unlocked={mode === "recalled"} entering={memory.id === enteringId} onOpen={() => void openMemory(memory)} />)}</div>
+    <div className="constellation" aria-hidden={!user}>{(mode === "future" ? future : recalled).map((memory, index) => <MemoryOrb key={memory.id} memory={memory} index={index} unlocked={mode === "recalled"} entering={memory.id === enteringId} onOpen={() => void openMemory(memory, hues[index % hues.length])} />)}</div>
     {mode === "future" && <section className={`composer-shell ${user ? "is-composer" : "is-gate"} ${dragging ? "is-dragging" : ""} ${files.length ? "has-images" : ""}`} onDragEnter={(event) => { event.preventDefault(); setDragging(true); }} onDragOver={(event) => event.preventDefault()} onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragging(false); }} onDrop={onDrop} aria-label={user ? "Release a memory" : "Enter Afterlight"}>
       <span className="liquid-layer" />
       {!user ? <Button type="button" className="google-button" onClick={() => void signIn()}><span className="google-mark" aria-hidden="true">G</span>Continue with Google</Button> : <div className="composer-content">
