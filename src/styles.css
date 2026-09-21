@@ -175,6 +175,8 @@
 
 .afterlight-room { position: relative; min-height: 100dvh; width: 100%; overflow: hidden; background: oklch(1 0 0); isolation: isolate; }
 .liquid-filter { position: fixed; width: 0; height: 0; }
+.room-scene { position: absolute; inset: 0; transition: filter .38s ease, opacity .38s ease, transform .38s ease; }
+.room-scene.is-transitioning { filter: blur(1.6rem); opacity: .08; transform: scale(1.025); }
 .constellation { position: absolute; inset: 0; z-index: 1; }
 .memory-orb { position: absolute; left: var(--x); top: var(--y); width: var(--size); height: var(--size); border: 0; padding: 0; border-radius: 9999px; background: transparent; cursor: pointer; transform: translate(calc(-50% + var(--pointer-x) * var(--depth)), calc(-50% + var(--pointer-y) * var(--depth))); animation: wander 23s ease-in-out var(--delay) infinite alternate; }
 .memory-orb.memory-entering { animation: memory-arrive 1.8s cubic-bezier(.22,.75,.25,1) both; pointer-events: none; }
