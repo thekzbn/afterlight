@@ -15,6 +15,13 @@
       "when": 1790028468995,
       "tag": "0001_allow_test_memory_delivery_override",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790028845877,
+      "tag": "0002_support_both_test_delivery_markers",
+      "breakpoints": true
     }
   ]
 }
