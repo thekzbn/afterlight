@@ -62,6 +62,7 @@ function Index() {
   const [authReady, setAuthReady] = useState(false);
   const [memories, setMemories] = useState<Memory[]>([]);
   const [mode, setMode] = useState<"future" | "recalled">("future");
+  const [roomTransitioning, setRoomTransitioning] = useState(false);
   const [message, setMessage] = useState("");
   const [delivery, setDelivery] = useState(() => localDateTime(new Date(Date.now() + dayMs)));
   const [dateText, setDateText] = useState(() => longDate(localDateTime(new Date(Date.now() + dayMs))));
@@ -76,7 +77,7 @@ function Index() {
   const fileInput = useRef<HTMLInputElement>(null);
   const previewUrls = useMemo(() => files.map((file) => URL.createObjectURL(file)), [files]);
   useEffect(() => () => previewUrls.forEach(URL.revokeObjectURL), [previewUrls]);
-  const future = useMemo(() => memories.filter((item) => new Date(item.delivery_at).getTime() > Date.now()), [memories]);
+  const future = useMemo(() => memories.filter((item) => item.id === enteringId || new Date(item.delivery_at).getTime() > Date.now()), [memories, enteringId]);
   const recalled = useMemo(() => memories.filter((item) => new Date(item.delivery_at).getTime() <= Date.now()), [memories]);
 
   async function loadMemories(currentUser: User) { const { data } = await supabase.from("memories").select("*").eq("user_id", currentUser.id).order("delivery_at"); setMemories(data ?? []); }
@@ -92,7 +93,7 @@ function Index() {
 
   async function release() {
     if (!user || !message.trim() || enteringId) return;
-    const target = new Date(delivery); const isTest = message.includes("<</test>>");
+    const target = new Date(delivery); const isTest = /<<\/?test>>/i.test(message);
     if (!isTest && (target.getTime() < Date.now() + dayMs || target.getTime() > Date.now() + 50 * 365.25 * dayMs)) { setError("Choose a moment from tomorrow to fifty years ahead."); return; }
     if (Number.isNaN(target.getTime())) { setError("The delivery moment is still out of focus."); return; }
     const memoryId = crypto.randomUUID(); const words = message.trim(); const paths: string[] = []; setError("");
@@ -106,11 +107,18 @@ function Index() {
   }
 
   async function openMemory(memory: Memory) { setFocused(memory); if (!memory.image_paths.length) { setPhotoUrls([]); return; } const { data } = await supabase.storage.from("memory-images").createSignedUrls(memory.image_paths, 600); setPhotoUrls((data ?? []).flatMap((item) => item.signedUrl ? [item.signedUrl] : [])); }
+  function changeRoom() {
+    if (roomTransitioning) return;
+    setFocused(null); setRoomTransitioning(true);
+    window.setTimeout(() => setMode((value) => value === "future" ? "recalled" : "future"), 360);
+    window.setTimeout(() => setRoomTransitioning(false), 760);
+  }
   if (!authReady) return <main className="afterlight-room"><LiquidFilter /></main>;
 
   return <main className="afterlight-room" onClick={() => focused && setFocused(null)}>
     <LiquidFilter />
-    {user && <Button type="button" variant="ghost" size="icon" className={`rewind-button ${mode === "recalled" ? "is-active" : ""}`} onClick={(event) => { event.stopPropagation(); setFocused(null); setMode((value) => value === "future" ? "recalled" : "future"); }} aria-label={mode === "future" ? "Open arrived memories" : "Return to future memories"} title={mode === "future" ? "Recollections" : "Return"}><Rewind strokeWidth={1.35} /></Button>}
+    {user && <Button type="button" variant="ghost" size="icon" className={`rewind-button ${mode === "recalled" ? "is-active" : ""}`} onClick={(event) => { event.stopPropagation(); changeRoom(); }} disabled={roomTransitioning} aria-label={mode === "future" ? "Open arrived memories" : "Return to future memories"} title={mode === "future" ? "Recollections" : "Return"}><Rewind strokeWidth={1.35} /></Button>}
+    <div className={`room-scene ${roomTransitioning ? "is-transitioning" : ""}`}>
     <div className="constellation" aria-hidden={!user}>{(mode === "future" ? future : recalled).map((memory, index) => <MemoryOrb key={memory.id} memory={memory} index={index} unlocked={mode === "recalled"} entering={memory.id === enteringId} onOpen={() => void openMemory(memory)} />)}</div>
     {mode === "future" && <section className={`composer-shell ${user ? "is-composer" : "is-gate"} ${dragging ? "is-dragging" : ""} ${files.length ? "has-images" : ""}`} onDragEnter={(event) => { event.preventDefault(); setDragging(true); }} onDragOver={(event) => event.preventDefault()} onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragging(false); }} onDrop={onDrop} aria-label={user ? "Release a memory" : "Enter Afterlight"}>
       <span className="liquid-layer" />
@@ -126,6 +134,7 @@ function Index() {
       </div>}
       {error && <p className="quiet-error" role="alert">{error}</p>}
     </section>}
+    </div>
     {focused && <article className="recollection" onClick={(event) => event.stopPropagation()}><span className="liquid-layer" /><Button type="button" variant="ghost" size="icon" className="memory-close" onClick={() => setFocused(null)} aria-label="Close memory"><X strokeWidth={1.25} /></Button><p>{focused.message}</p>{photoUrls.length > 0 && <div className={`memory-photos photos-${photoUrls.length}`}>{photoUrls.map((url) => <img key={url} src={url} alt="Attached recollection" />)}</div>}<time>{longDate(focused.created_at)}</time></article>}
   </main>;
 }
