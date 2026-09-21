@@ -71,7 +71,7 @@ function Index() {
   const [files, setFiles] = useState<File[]>([]);
   const [dragging, setDragging] = useState(false);
   const [enteringId, setEnteringId] = useState<string | null>(null);
-  const [focused, setFocused] = useState<Memory | null>(null);
+  const [focused, setFocused] = useState<{ memory: Memory; hue: string } | null>(null);
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [error, setError] = useState("");
   const fileInput = useRef<HTMLInputElement>(null);
