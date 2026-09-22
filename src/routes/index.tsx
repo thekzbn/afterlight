@@ -54,7 +54,7 @@ function LiquidFilter() { return <svg className="liquid-filter" aria-hidden="tru
 function MemoryOrb({ memory, index, unlocked, entering, onOpen }: { memory: Memory; index: number; unlocked: boolean; entering: boolean; onOpen: () => void }) {
   const [whispering, setWhispering] = useState(false);
   const style = { "--x": `${12 + ((index * 29) % 76)}%`, "--y": `${14 + ((index * 37) % 68)}%`, "--size": `${4.4 + (index % 4) * 1.35}rem`, "--delay": `${index * -4.1}s`, "--depth": `${0.5 + (index % 3) * 0.2}` } as CSSProperties;
-  return <button type="button" className={`memory-orb memory-${hues[index % hues.length]} ${unlocked ? "memory-unlocked" : ""} ${entering ? "memory-entering" : ""}`} style={style} onClick={() => unlocked ? onOpen() : setWhispering((value) => !value)} onBlur={() => setWhispering(false)} aria-label={unlocked ? "Open memory" : `Sealed until ${longDate(memory.delivery_at)}`}><span className="orb-core" />{!unlocked && <span className={`orb-whisper ${whispering ? "is-visible" : ""}`}>{horizon(memory.delivery_at)} · {longDate(memory.delivery_at)}</span>}</button>;
+  return <button type="button" className={`memory-orb memory-${hues[index % hues.length]} ${unlocked ? "memory-unlocked" : ""} ${entering ? "memory-entering" : ""}`} style={style} onClick={() => unlocked ? onOpen() : setWhispering((value) => !value)} onBlur={() => setWhispering(false)} aria-label={unlocked ? "Open memory" : `Sealed until ${longDate(memory.delivery_at)}`}><span className="orb-core" />{unlocked ? <span className="orb-open-hint">open</span> : <span className={`orb-whisper ${whispering ? "is-visible" : ""}`}>{horizon(memory.delivery_at)} · {longDate(memory.delivery_at)}</span>}</button>;
 }
 
 function Index() {
@@ -126,7 +126,7 @@ async function openMemory(memory: Memory, hue: string) {
     <LiquidFilter />
     {user && <Button type="button" variant="ghost" size="icon" className={`rewind-button ${mode === "recalled" ? "is-active" : ""}`} onClick={(event) => { event.stopPropagation(); changeRoom(); }} disabled={roomTransitioning} aria-label={mode === "future" ? "Open arrived memories" : "Return to future memories"} title={mode === "future" ? "Recollections" : "Return"}><Rewind strokeWidth={1.35} /></Button>}
     <div className={`room-scene ${roomTransitioning ? "is-transitioning" : ""}`}>
-    <div className="constellation" aria-hidden={!user}>{(mode === "future" ? future : recalled).map((memory, index) => <MemoryOrb key={memory.id} memory={memory} index={index} unlocked={mode === "recalled"} entering={memory.id === enteringId} onOpen={() => void openMemory(memory, hues[index % hues.length])} />)}</div>
+    <div className="constellation" aria-hidden={!user}>{(mode === "future" ? future : recalled).map((memory, index) => <MemoryOrb key={memory.id} memory={memory} index={index} unlocked={mode === "recalled"} entering={memory.id === enteringId} onOpen={() => void openMemory(memory, hues[index % hues.length] ?? "violet")} />)}</div>
     {mode === "future" && <section className={`composer-shell ${user ? "is-composer" : "is-gate"} ${dragging ? "is-dragging" : ""} ${files.length ? "has-images" : ""}`} onDragEnter={(event) => { event.preventDefault(); setDragging(true); }} onDragOver={(event) => event.preventDefault()} onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragging(false); }} onDrop={onDrop} aria-label={user ? "Release a memory" : "Enter Afterlight"}>
       <span className="liquid-layer" />
       {!user ? <Button type="button" className="google-button" onClick={() => void signIn()}><span className="google-mark" aria-hidden="true">G</span>Continue with Google</Button> : <div className="composer-content">
@@ -142,6 +142,6 @@ async function openMemory(memory: Memory, hue: string) {
       {error && <p className="quiet-error" role="alert">{error}</p>}
     </section>}
     </div>
-    {focused && <article className="recollection" onClick={(event) => event.stopPropagation()}><span className="liquid-layer" /><Button type="button" variant="ghost" size="icon" className="memory-close" onClick={() => setFocused(null)} aria-label="Close memory"><X strokeWidth={1.25} /></Button><p>{focused.message}</p>{photoUrls.length > 0 && <div className={`memory-photos photos-${photoUrls.length}`}>{photoUrls.map((url) => <img key={url} src={url} alt="Attached recollection" />)}</div>}<time>{longDate(focused.created_at)}</time></article>}
+    {focused && <article className={`recollection memory-${focused.hue}`} onClick={(event) => event.stopPropagation()}><span className="liquid-layer" /><Button type="button" variant="ghost" size="icon" className="memory-close" onClick={() => setFocused(null)} aria-label="Close memory"><X strokeWidth={1.25} /></Button><div className="recollection-scroll"><p>{focused.memory.message}</p>{photoUrls.length > 0 && <div className={`memory-photos photos-${photoUrls.length}`}>{photoUrls.map((url) => <img key={url} src={url} alt="Attached recollection" />)}</div>}<time>{longDate(focused.memory.created_at)}</time></div></article>}
   </main>;
 }

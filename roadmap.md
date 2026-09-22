@@ -7,7 +7,7 @@
 - [x] Tune remembrances smaller and faster
 - [x] Blur the room out and back in when switching history views
 - [x] Verify the updated screen loads without browser errors
-- [ ] Add a pulsing glow and open hint to unlocked memories
-- [ ] Tint opened recollections to match their memory color
-- [ ] Add a fixed-height recollection shell with an inner scroll area
-- [ ] Verify recollection interactions and overflow
+- [x] Add a pulsing glow and open hint to unlocked memories
+- [x] Tint opened recollections to match their memory color
+- [x] Add a fixed-height recollection shell with an inner scroll area
+- [ ] Verify recollection interactions and overflow — blocked until a preview account signs in
