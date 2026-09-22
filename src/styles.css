@@ -187,6 +187,7 @@
 .orb-open-hint { position: absolute; left: 50%; top: calc(100% + .7rem); transform: translateX(-50%) translateY(.2rem); color: oklch(0.38 0.018 280 / .64); font-size: .66rem; opacity: 0; transition: opacity .45s ease, transform .45s ease; pointer-events: none; }.memory-unlocked:hover .orb-open-hint, .memory-unlocked:focus-visible .orb-open-hint { opacity: 1; transform: translateX(-50%) translateY(0); }
 .composer-shell, .recollection { position: absolute; z-index: 4; left: 50%; top: 50%; transform: translate(-50%, -50%); border: .0625rem solid var(--glass-border); border-radius: 2rem; box-shadow: inset 0 .125rem .125rem oklch(1 0 0 / .9), inset 0 -.0625rem .125rem oklch(1 0 0 / .35), 0 1.5rem 5rem var(--glass-shadow), 0 0 0 .0625rem oklch(0.82 0.05 290 / .16); overflow: hidden; }
 .composer-shell { width: min(47rem, calc(100vw - 2rem)); min-height: 4.65rem; border-radius: 9999px; transition: width .8s ease, min-height .65s ease, border-radius .65s ease, transform .65s ease; }.composer-shell.is-gate { width: 16.5rem; min-height: 4.6rem; display: grid; place-items: center; }.composer-shell.has-images { min-height: 8.9rem; border-radius: 2.5rem; }.composer-shell.is-dragging { min-height: 11rem; width: min(32rem, calc(100vw - 2rem)); border-radius: 7rem 3rem 6rem 4rem / 4rem 7rem 3rem 6rem; transform: translate(-50%, -50%) scale(1.035); }
+.composer-shell.is-dragging > .liquid-layer { background: oklch(1 0 0 / .35); backdrop-filter: blur(2.2rem) saturate(2.2) contrast(1.1); animation: drag-breathe 1.8s ease-in-out infinite; }
 .liquid-layer { position: absolute; inset: -2rem; z-index: -1; background: oklch(1 0 0 / .2); backdrop-filter: blur(1.5rem) saturate(1.75) contrast(1.06); filter: url(#afterlight-liquid); }
 .composer-content { position: relative; padding: .95rem 1rem .95rem 1.35rem; }
 .composer-line { display: flex; align-items: center; gap: .35rem; min-width: 0; }
@@ -212,12 +213,11 @@
 .google-button:hover { background: oklch(1 0 0 / .7); }
 .google-mark { color: oklch(0.62 0.2 253); font-weight: 500; font-size: 1.05rem; }
 .quiet-error { position: absolute; top: calc(100% + .8rem); left: 50%; width: max-content; max-width: 18rem; transform: translateX(-50%); color: oklch(0.5 0.1 20 / .8); font-size: .7rem; text-align: center; }
-/* Rewind button — pure ambient glass, no inset bevel, no hover scale, same visual weight as the composer */
-.rewind-button { position: fixed; z-index: 8; top: 1.35rem; right: 1.35rem; width: 3rem; height: 3rem; border-radius: 9999px; color: oklch(0.28 0.025 280 / .78); border: .0625rem solid oklch(1 0 0 / .80); box-shadow: 0 .4rem 1.8rem oklch(0.55 0.06 280 / .12); overflow: hidden; isolation: isolate; background: transparent; transition: color .3s ease; }
-.rewind-button > .liquid-layer { position: absolute; inset: -1.5rem; z-index: -1; background: oklch(1 0 0 / .22); backdrop-filter: blur(1.5rem) saturate(1.6); filter: url(#afterlight-liquid); }
+/* Rewind button — identical glass to the composer: same border, same ambient shadow, same liquid layer. No tinting, ever. */
+.rewind-button { position: fixed; z-index: 8; top: 1.35rem; right: 1.35rem; width: 3rem; height: 3rem; border-radius: 9999px; color: oklch(0.28 0.025 280 / .78); border: .0625rem solid var(--glass-border); box-shadow: inset 0 .125rem .125rem oklch(1 0 0 / .9), inset 0 -.0625rem .125rem oklch(1 0 0 / .35), 0 1.5rem 5rem var(--glass-shadow), 0 0 0 .0625rem oklch(0.82 0.05 290 / .16); overflow: hidden; isolation: isolate; background: transparent; transition: color .3s ease; }
+.rewind-button > .liquid-layer { position: absolute; inset: -1.5rem; z-index: -1; background: oklch(1 0 0 / .2); backdrop-filter: blur(1.5rem) saturate(1.75) contrast(1.06); filter: url(#afterlight-liquid); }
 .rewind-button:hover { color: oklch(0.18 0.03 280); }
-.rewind-button.is-active { color: oklch(0.16 0.03 280); }
-.rewind-button.is-active > .liquid-layer { background: color-mix(in oklch, var(--after-violet) 22%, oklch(1 0 0 / .28)); }
+.rewind-button.is-active { color: oklch(0.28 0.025 280 / .78); }
 .recollection { z-index: 10; width: min(34rem, calc(100vw - 2rem)); height: min(36rem, calc(100dvh - 5rem)); overflow: hidden; background: color-mix(in oklch, currentColor 24%, oklch(1 0 0 / .72)); animation: recollection-expand .52s cubic-bezier(0.16, 1, 0.3, 1) both; }
 .recollection > .liquid-layer { background: color-mix(in oklch, currentColor 18%, oklch(1 0 0 / .38)); }
 .recollection-scroll { position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain; padding: 3rem 2.3rem 2rem; scrollbar-width: thin; scrollbar-color: color-mix(in oklch, currentColor 28%, transparent) transparent; animation: recollection-content-fade .38s cubic-bezier(0.16, 1, 0.3, 1) .14s both; }
@@ -230,15 +230,16 @@
 @keyframes wander { 0% { margin: 0; } 28% { margin: -1.8rem 0 0 1.4rem; } 61% { margin: .8rem 0 0 -1.3rem; } 100% { margin: -1rem 0 0 .5rem; } }
 @keyframes memory-arrive { 0% { left: 50%; top: 50%; width: min(22rem, 50vw); height: 3rem; opacity: 1; filter: blur(0); } 100% { left: var(--x); top: var(--y); width: var(--size); height: var(--size); opacity: 1; filter: blur(.15rem); } }
 @keyframes unlocked-glow { 0%, 100% { opacity: .72; filter: blur(.62rem) saturate(1.2); } 50% { opacity: .95; filter: blur(.42rem) saturate(1.6); } }
+@keyframes drag-breathe { 0%, 100% { opacity: .88; } 50% { opacity: 1; } }
 @keyframes recollection-expand { 0% { transform: translate(-50%, -50%) translate(calc(var(--origin-x, 50vw) - 50vw), calc(var(--origin-y, 50vh) - 50vh)) scale(0.12); opacity: 0; border-radius: 9999px; filter: blur(1rem); } 35% { opacity: .9; border-radius: 9999px; } 65% { filter: blur(0); border-radius: 2.8rem; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; border-radius: 2rem; filter: blur(0); } }
 @keyframes recollection-content-fade { 0% { opacity: 0; transform: translateY(.75rem); } 100% { opacity: 1; transform: translateY(0); } }
 @media (max-width: 42rem) {
   .composer-shell { width: calc(100vw - 1.25rem); }
   .composer-content { padding: .75rem .8rem; }
   .composer-line { gap: .25rem; }
-  /* On mobile the time slide is inline but the date field hides — only show time input */
-  .time-slide input:first-child { display: none; }
-  .time-slide input:last-child { width: 7rem; }
+  /* Both date and time shown on mobile, smaller widths */
+  .time-slide input:first-child { width: 6.2rem; }
+  .time-slide input:last-child { width: 5rem; }
   /* When time is open on mobile, fade image+send out so the inputs have room */
   .composer-line.is-time-open .glass-icon:not(.clock-icon),
   .composer-line.is-time-open .release-button { opacity: 0; pointer-events: none; width: 0; padding: 0; overflow: hidden; transition: opacity .25s ease, width .3s ease; }

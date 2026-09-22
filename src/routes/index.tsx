@@ -28,10 +28,17 @@ function pad(value: number) { return String(value).padStart(2, "0"); }
 function localDateTime(date: Date) { return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`; }
 function ordinal(day: number) { return `${day}${day > 3 && day < 21 ? "th" : (["th", "st", "nd", "rd"][day % 10] ?? "th")}`; }
 function longDate(value: string) { const date = new Date(value); return `${ordinal(date.getDate())} ${date.toLocaleDateString("en-GB", { month: "long" })}, ${date.getFullYear()}`; }
+function shortDate(value: string) { const date = new Date(value); return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`; }
 function clockTime(value: string) { return new Date(value).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true }); }
 function horizon(value: string) { const days = Math.ceil((new Date(value).getTime() - Date.now()) / dayMs); if (days <= 0) return "arrived"; if (days === 1) return "tomorrow"; if (days < 45) return `in ${days} days`; if (days < 730) return `in ${Math.round(days / 30)} months`; return `in ${Math.round(days / 365)} years`; }
 
 function parseDateText(value: string, base: Date) {
+  // Handle DD/MM/YYYY explicitly (DMY format used in the UI)
+  const dmy = value.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (dmy) {
+    const parsed = new Date(Number(dmy[3]), Number(dmy[2]) - 1, Number(dmy[1]));
+    if (!Number.isNaN(parsed.getTime())) { parsed.setHours(base.getHours(), base.getMinutes(), 0, 0); return parsed; }
+  }
   const clean = value.trim().replace(/(\d)(st|nd|rd|th)/gi, "$1");
   const parsed = new Date(clean);
   if (Number.isNaN(parsed.getTime())) return null;
@@ -85,7 +92,7 @@ function Index() {
   const [roomTransitioning, setRoomTransitioning] = useState(false);
   const [message, setMessage] = useState("");
   const [delivery, setDelivery] = useState(() => localDateTime(new Date(Date.now() + dayMs)));
-  const [dateText, setDateText] = useState(() => longDate(localDateTime(new Date(Date.now() + dayMs))));
+  const [dateText, setDateText] = useState(() => shortDate(localDateTime(new Date(Date.now() + dayMs))));
   const [timeText, setTimeText] = useState(() => clockTime(localDateTime(new Date(Date.now() + dayMs))));
   const [timeOpen, setTimeOpen] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
@@ -108,7 +115,7 @@ function Index() {
   function acceptFiles(items: File[]) { setFiles(items.filter((file) => file.type.startsWith("image/")).slice(0, 2)); setDragging(false); }
   function chooseImages(event: ChangeEvent<HTMLInputElement>) { acceptFiles(Array.from(event.target.files ?? [])); }
   function onDrop(event: DragEvent) { event.preventDefault(); acceptFiles(Array.from(event.dataTransfer.files)); }
-  function applyDate() { const parsed = parseDateText(dateText, new Date(delivery)); if (!parsed) { setError("That date is still out of focus."); return; } setDelivery(localDateTime(parsed)); setDateText(longDate(localDateTime(parsed))); setError(""); }
+  function applyDate() { const parsed = parseDateText(dateText, new Date(delivery)); if (!parsed) { setError("That date is still out of focus."); return; } setDelivery(localDateTime(parsed)); setDateText(shortDate(localDateTime(parsed))); setError(""); }
   function applyTime() { const parsed = parseTimeText(timeText, new Date(delivery)); if (!parsed) { setError("That time is still out of focus."); return; } setDelivery(localDateTime(parsed)); setTimeText(clockTime(localDateTime(parsed))); setError(""); }
 
   async function release() {
