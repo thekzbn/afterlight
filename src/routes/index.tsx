@@ -54,7 +54,7 @@ function LiquidFilter() { return <svg className="liquid-filter" aria-hidden="tru
 function MemoryOrb({ memory, index, unlocked, entering, onOpen }: { memory: Memory; index: number; unlocked: boolean; entering: boolean; onOpen: () => void }) {
   const [whispering, setWhispering] = useState(false);
   const style = { "--x": `${12 + ((index * 29) % 76)}%`, "--y": `${14 + ((index * 37) % 68)}%`, "--size": `${4.4 + (index % 4) * 1.35}rem`, "--delay": `${index * -4.1}s`, "--depth": `${0.5 + (index % 3) * 0.2}` } as CSSProperties;
-  return <button type="button" className={`memory-orb memory-${hues[index % hues.length]} ${unlocked ? "memory-unlocked" : ""} ${entering ? "memory-entering" : ""}`} style={style} onClick={() => unlocked ? onOpen() : setWhispering((value) => !value)} onBlur={() => setWhispering(false)} aria-label={unlocked ? "Open memory" : `Sealed until ${longDate(memory.delivery_at)}`}><span className="orb-core" />{!unlocked && <span className={`orb-whisper ${whispering ? "is-visible" : ""}`}>{horizon(memory.delivery_at)} · {longDate(memory.delivery_at)}</span>}</button>;
+  return <button type="button" className={`memory-orb memory-${hues[index % hues.length]} ${unlocked ? "memory-unlocked" : ""} ${entering ? "memory-entering" : ""}`} style={style} onClick={() => unlocked ? onOpen() : setWhispering((value) => !value)} onBlur={() => setWhispering(false)} aria-label={unlocked ? "Open memory" : `Sealed until ${longDate(memory.delivery_at)}`}><span className="orb-core" />{unlocked ? <span className="orb-open-hint">open</span> : <span className={`orb-whisper ${whispering ? "is-visible" : ""}`}>{horizon(memory.delivery_at)} · {longDate(memory.delivery_at)}</span>}</button>;
 }
 
 function Index() {
@@ -142,6 +142,6 @@ async function openMemory(memory: Memory, hue: string) {
       {error && <p className="quiet-error" role="alert">{error}</p>}
     </section>}
     </div>
-    {focused && <article className="recollection" onClick={(event) => event.stopPropagation()}><span className="liquid-layer" /><Button type="button" variant="ghost" size="icon" className="memory-close" onClick={() => setFocused(null)} aria-label="Close memory"><X strokeWidth={1.25} /></Button><p>{focused.message}</p>{photoUrls.length > 0 && <div className={`memory-photos photos-${photoUrls.length}`}>{photoUrls.map((url) => <img key={url} src={url} alt="Attached recollection" />)}</div>}<time>{longDate(focused.created_at)}</time></article>}
+    {focused && <article className={`recollection memory-${focused.hue}`} onClick={(event) => event.stopPropagation()}><span className="liquid-layer" /><Button type="button" variant="ghost" size="icon" className="memory-close" onClick={() => setFocused(null)} aria-label="Close memory"><X strokeWidth={1.25} /></Button><div className="recollection-scroll"><p>{focused.memory.message}</p>{photoUrls.length > 0 && <div className={`memory-photos photos-${photoUrls.length}`}>{photoUrls.map((url) => <img key={url} src={url} alt="Attached recollection" />)}</div>}<time>{longDate(focused.memory.created_at)}</time></div></article>}
   </main>;
 }
