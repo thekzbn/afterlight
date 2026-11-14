@@ -30,7 +30,7 @@ To communicate an idea that is present yet out of focus, Afterlight uses **Deep 
 
 ## ✦ Tech Stack
 
-- **Framework**: React 18 + TanStack Start & TanStack Router
+- **Framework**: React 19 + TanStack Start & TanStack Router
 - **Build System**: Vite + Rolldown
 - **Styling**: Tailwind CSS v4 + OKLCH Color Space + Custom Liquid Glass Shaders
 - **Backend & Auth**: Supabase (Database & Storage) + `@lovable.dev/cloud-auth-js` OAuth
@@ -40,21 +40,21 @@ To communicate an idea that is present yet out of focus, Afterlight uses **Deep 
 
 ## ✦ Development & Setup
 
-To run Afterlight locally:
+To run Afterlight locally, install a current Bun release first. The repository includes `bun.lock`, so use Bun to keep dependency resolution aligned with the lockfile:
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/thekzbn/afterlight.git
 cd afterlight
 
-# 2. Install dependencies
-npm install
+# 2. Install dependencies with Bun (the repository includes bun.lock)
+bun install
 
 # 3. Development server
-npm run dev
+bun run dev
 
 # 4. Production build check
-npx vite build
+bun run build
 ```
 
 ---
